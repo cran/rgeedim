@@ -4,6 +4,7 @@
 \alias{gd_image_from_id}
 \alias{gd_collection_from_name}
 \alias{gd_collection_from_list}
+\alias{gd_asset_id}
 \title{Reference Google Earth Engine Image or Image Collection by ID or Name}
 \usage{
 gd_image_from_id(x)
@@ -11,9 +12,15 @@ gd_image_from_id(x)
 gd_collection_from_name(x)
 
 gd_collection_from_list(x)
+
+gd_asset_id(filename, folder = NULL)
 }
 \arguments{
 \item{x}{character. \code{id} of Image, \code{name} of Image Collection, or a vector of Image \code{id} to create a new Image Collection}
+
+\item{filename}{File or Asset Name}
+
+\item{folder}{Optional: Project Name}
 }
 \value{
 \code{geedim.MaskedImage} or \code{geedim.MaskedCollection} object, or \code{try-error} on error
@@ -31,13 +38,46 @@ if (gd_is_initialized())
 \dontshow{if (gd_is_initialized()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 \donttest{
 if (gd_is_initialized())
-  gd_collection_from_name("USGS/3DEP/1m")
+
+  # Find 1m DEMs in arbitrary extent
+  r <- gd_bbox(xmin = -121.4, xmax = -121.35, ymin = 37.55, ymax = 37.6)
+
+  # collection of individual tiles of DEM
+  x <- gd_collection_from_name("USGS/3DEP/1m")
+
+  # search within region
+  y <- gd_search(x, r)
+
+  gd_properties(y)
+
 }
 \dontshow{\}) # examplesIf}
 \dontshow{if (gd_is_initialized()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 \donttest{
 if (gd_is_initialized())
-  gd_collection_from_list(c("USGS/3DEP/1m", "USGS/NED"))
+  # Find 1m DEM in arbitrary extent
+  r <- gd_bbox(xmin = -121.4, xmax = -121.35, ymin = 37.55, ymax = 37.6)
+
+  # collection of individual tiles of DEM
+  x <- gd_collection_from_name("USGS/3DEP/1m")
+
+  # search within region
+  y <- gd_search(x, r)
+
+  # select images with fill > 0
+  z <- subset(gd_properties(y), fill > 0)
+
+  # create encapsulated images from IDs returned by search
+  l <- lapply(z$id, gd_image_from_id)
+
+  # create a new collection from the list of images
+  gd_collection_from_list(l)
+}
+\dontshow{\}) # examplesIf}
+\dontshow{if (gd_is_initialized()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\donttest{
+if (gd_is_initialized())
+  gd_asset_id("RGEEDIM_TEST", "your-project-name")
 }
 \dontshow{\}) # examplesIf}
 }

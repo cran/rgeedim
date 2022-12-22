@@ -26,9 +26,9 @@ gd_enum_names <- function() {
 #' }
 gd_enum_elements <- function(enum = gd_enum_names()) {
   enum <- match.arg(enum, gd_enum_names(), several.ok = TRUE)
-  res <- lapply(enum, \(x) {
+  res <- lapply(enum, function(x) {
     y <- gd$enums[[x]]
-    sapply(names(y), \(z) y[[z]]$value)
+    sapply(names(y), function(z) y[[z]]$value)
   })
   names(res) <- enum
   res
@@ -71,4 +71,18 @@ gd_cloud_mask_methods <- function() {
 #' }
 gd_composite_methods <- function() {
   gd_enum_elements("CompositeMethod")[[1]]
+}
+
+
+#' @return `gd_export_types()`: character vector of export types (Enum `"ExportType"`)
+#' @export
+#' @rdname enum
+#' @examplesIf gd_is_initialized()
+#' @examples
+#' \donttest{
+#' if (gd_is_initialized())
+#'   gd_export_types()
+#' }
+gd_export_types <- function() {
+  gd_enum_elements("ExportType")[[1]]
 }
