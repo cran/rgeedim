@@ -342,11 +342,26 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <p>This vignette shows how to extract a Google Earth Engine asset by
 name for an arbitrary extent and visualize it in R.</p>
-<p>First, we load {rgeedim} and call <code>gd_initialize()</code>. This
-is a wrapper function around <code>geedim.Initialize()</code> that must
-be run before using the Python Google Earth Engine API.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rgeedim)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">gd_initialize</span>()</span></code></pre></div>
+<p>First, we load {rgeedim}.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(rgeedim)</span></code></pre></div>
+<p>If you have the necessary Python dependencies installed (geedim,
+earthengine-api), you will see the versions printed out when the package
+is loaded.</p>
+<p>If this is your first time using any Google Earth Engine tools,
+authenticate with <code>gd_authenticate()</code>.</p>
+<p>You can pass arguments to use several different authorization
+methods. Perhaps the easiest to use is <code>auth_mode=&quot;notebook&quot;</code>
+in that does not rely on an existing
+<code>GOOGLE_APPLICATION_CREDENTIALS</code> file nor an installation of
+the <code>gcloud</code> CLI tools. However, the other options are better
+for non-interactive use.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">gd_authenticate</span>(<span class="at">auth_mode =</span> <span class="st">&quot;notebook&quot;</span>)</span></code></pre></div>
+<p>You only need to authenticate periodically, depending on the method
+you used. But in each session we need to call
+<code>gd_initialize()</code>. This is a wrapper function around
+<code>geedim.Initialize()</code> that must be run before using the
+Python Google Earth Engine API.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">gd_initialize</span>()</span></code></pre></div>
 <p>Perhaps the <em>simplest</em> way to specify the target extent is
 using the xmin/xmax/ymin/ymax arguments to <code>gd_bbox()</code>. This
 function returns a Python object equivalent to <em>GeoJSON</em>, which
@@ -354,12 +369,12 @@ is interchangeably represented as a simple <code>list</code> object in
 <strong>R</strong> using {reticulate}.</p>
 <div id="determine-target-region" class="section level2">
 <h2>Determine Target Region</h2>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>r <span class="ot">&lt;-</span> <span class="fu">gd_bbox</span>(</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">xmin =</span> <span class="sc">-</span><span class="dv">121</span>,</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">xmax =</span> <span class="sc">-</span><span class="fl">120.5</span>,</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">ymin =</span> <span class="fl">38.5</span>,</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">ymax =</span> <span class="dv">39</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>r <span class="ot">&lt;-</span> <span class="fu">gd_bbox</span>(</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>  <span class="at">xmin =</span> <span class="sc">-</span><span class="dv">121</span>,</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  <span class="at">xmax =</span> <span class="sc">-</span><span class="fl">120.5</span>,</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  <span class="at">ymin =</span> <span class="fl">38.5</span>,</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>  <span class="at">ymax =</span> <span class="dv">39</span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>)</span></code></pre></div>
 <p>As is standard for <em>GeoJSON</em>, coordinates of the bounding box
 are expressed in WGS84 decimal degrees (<code>&quot;OGC:CRS84&quot;</code>). Note
 that longitude, latitude (X, Y) coordinate pair order is implied.</p>
@@ -372,7 +387,7 @@ data catalog: <a href="https://developers.google.com/earth-engine/datasets/catal
 <code>&quot;id&quot;</code> to <code>gd_image_from_id()</code>. For example here
 we use <a href="https://developers.google.com/earth-engine/datasets/catalog/CSP_ERGo_1_0_Global_SRTM_topoDiversity">Global
 SRTM Topographic Diversity</a>:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">gd_image_from_id</span>(<span class="st">&#39;CSP/ERGo/1_0/Global/SRTM_topoDiversity&#39;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">gd_image_from_id</span>(<span class="st">&#39;CSP/ERGo/1_0/Global/SRTM_topoDiversity&#39;</span>)</span></code></pre></div>
 <p><code>gd_image_from_id()</code> will return
 <code>geedim.mask.MaskedImage</code> and
 <code>gd_collection_from_name()</code> will return
@@ -386,22 +401,22 @@ of making a region argument from bounding coordinates or a {terra}
 <code>BaseImage.download()</code> method include <code>scale</code>
 which allows warping of the result to a target resolution. Try modifying
 this example to use <code>scale=90</code> (~native SRTM resolution):</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>img <span class="ot">&lt;-</span> <span class="fu">gd_download</span>(x, <span class="at">filename =</span> <span class="st">&#39;image.tif&#39;</span>,</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">region =</span> r, <span class="at">scale =</span> <span class="dv">900</span>,</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">overwrite =</span> <span class="cn">TRUE</span>, <span class="at">silent =</span> <span class="cn">FALSE</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>                  )</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>img <span class="ot">&lt;-</span> <span class="fu">gd_download</span>(x, <span class="at">filename =</span> <span class="st">&#39;image.tif&#39;</span>,</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>                   <span class="at">region =</span> r, <span class="at">scale =</span> <span class="dv">900</span>,</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>                   <span class="at">overwrite =</span> <span class="cn">TRUE</span>, <span class="at">silent =</span> <span class="cn">FALSE</span></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>                  )</span></code></pre></div>
 <p><code>gd_download()</code> (invisibly) returns the
 <code>filename</code> on successful download, which helps to “pipe” into
 functions that might read the result.</p>
 <p>So we can use the {terra} <code>rast()</code> function to read the
 GeoTIFF <code>gd_download()</code> result.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(terra)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>f <span class="ot">&lt;-</span> <span class="fu">rast</span>(img)</span></code></pre></div>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mar=</span><span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>))</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(f[[<span class="dv">1</span>]])</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># inspect object</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>f</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">library</span>(terra)</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>f <span class="ot">&lt;-</span> <span class="fu">rast</span>(img)</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mar=</span><span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>))</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="fu">plot</span>(f[[<span class="dv">1</span>]])</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="co"># inspect object</span></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>f</span></code></pre></div>
 </div>
 
 
