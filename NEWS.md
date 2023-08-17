@@ -1,3 +1,18 @@
+# rgeedim 0.2.5
+
+ * Update example for `gd_enum_names()`
+ 
+ * Fix different value storage in `gd_enum_elements()` (required for reticulate >= 1.29)
+ 
+ * Update examples in /misc folder: <https://github.com/brownag/rgeedim/tree/main/misc>
+  - Add new example using `gd_export()` and the Earth Engine API directly via `earthengine()`
+ 
+ * Add `gd_region_to_vect()` an inverse method for `gd_bbox()`/`gd_region()` that creates a 'terra' _SpatVector_ from a GeoJSON-like list
+
+ * Add `gd_list_assets()` a helper function for listing the assets associated with a particular Earth Engine project.
+ 
+ * `reticulate::configure_environment()` is no longer called on load, this is a precaution to avoid unintended impacts from the automatic routine installing on CRAN or similar.
+
 # rgeedim 0.2.4
  
  * Add `gd_task_status()` and `gd_task_uri()` for working with Task object produced by `gd_export()`

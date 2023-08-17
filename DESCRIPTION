@@ -2,7 +2,7 @@ Package: rgeedim
 Type: Package
 Title: Search, Composite, and Download 'Google Earth Engine' Imagery
         with the 'Python' Module 'geedim'
-Version: 0.2.4
+Version: 0.2.5
 Authors@R: c(person("Andrew", "Brown", role = c("aut", "cre"), email = "brown.andrewg@gmail.com"),
              person("Dugal", "Harris", role = "cph", comment = "'geedim' 'Python' module"))
 Maintainer: Andrew Brown <brown.andrewg@gmail.com>
@@ -24,8 +24,8 @@ Depends: R (>= 3.5)
 Encoding: UTF-8
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2023-06-07 14:55:56 UTC; andrew
+Packaged: 2023-08-16 21:52:01 UTC; andrew
 Author: Andrew Brown [aut, cre],
   Dugal Harris [cph] ('geedim' 'Python' module)
 Repository: CRAN
-Date/Publication: 2023-06-07 15:20:02 UTC
+Date/Publication: 2023-08-17 14:30:02 UTC

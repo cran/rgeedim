@@ -95,17 +95,8 @@ reticulate::py_install("geedim")
 
 ### Troubleshooting
 
-If using Python within RStudio for the first time, you may need to set
-your default interpreter in *Tools* \>\> *Global Options…* \>\>
-*Python*.
-
-If you have trouble compiling dependency packages on Windows, you can
-take advantage of the unofficial `pip` wheels (binaries) prepared by by
-[Christoph Gohlke](https://www.cgohlke.com/):
-<https://www.lfd.uci.edu/~gohlke/pythonlibs/>. *Note the name of the
-package and the specific version of Python you are installing for.*
-Download the desired package/version and then call
-`pip install your-package.whl`.
+If using Python within RStudio, you may need to set your default
+interpreter in *Tools* \>\> *Global Options…* \>\> *Python*.
 
 ## How {rgeedim} Works
 
@@ -115,7 +106,7 @@ expressed in WGS84 decimal degrees (`"OGC:CRS84"`).
 
 ``` r
 library(rgeedim)
-#> rgeedim v0.2.4 -- using geedim 1.7.1 w/ earthengine-api 0.1.355
+#> rgeedim v0.2.5 -- using geedim 1.7.2 w/ earthengine-api 0.1.363
 ```
 
 If this is your first time using any Google Earth Engine tools,
@@ -184,7 +175,7 @@ where data are available).
 
 ``` r
 library(terra)
-#> terra 1.7.33
+#> terra 1.7.39
 
 f <- rast(res)
 f
@@ -204,8 +195,8 @@ plot(f[[1]])
 ## Example: Hillshade from DEM
 
 This example demonstrates the download of a section of the USGS NED
-seamless 10m grid. This DEM is processed with {terra} to calculate some
-terrain derivatives (slope, aspect) and a hillshade.
+seamless 10m grid. This DEM is processed locally with {terra} to
+calculate some terrain derivatives (slope, aspect) and a hillshade.
 
 ``` r
 library(rgeedim)
@@ -222,7 +213,7 @@ b <- gd_bbox(
 
 ## hillshade example
 # download 10m NED DEM in AEA
-x <- "USGS/NED" |>
+x <- "USGS/3DEP/10m" |>
   gd_image_from_id() |>
   gd_download(
     region = b,
@@ -230,6 +221,7 @@ x <- "USGS/NED" |>
     crs = "EPSG:5070",
     resampling = "bilinear",
     filename = "image.tif",
+    bands = list("elevation"),
     overwrite = TRUE,
     silent = FALSE
   )
@@ -244,7 +236,14 @@ hsd <- shade(slp, asp)
 plot(c(dem, hillshade = hsd))
 ```
 
-<img src="man/figures/README-unnamed-chunk-5-1.jpeg" width="100%" />
+<img src="man/figures/README-dem10-hillshade-1.jpeg" width="100%" />
+
+Subsets of the `"USGS/3DEP/10m"` image result in multi-band GeoTIFF with
+`"elevation"` and `"FILL_MASK"` bands. In the contiguous US we know the
+DEM is continuous so the `FILL_MASK` is not that useful. With geedim
+\>1.7 we retrieve only the `"elevation"` band by specifying argument
+`bands = list("elevation")`. This cuts the raw image size that we need
+to download in half.
 
 ## Example: LiDAR Slope Map
 
@@ -290,8 +289,8 @@ a <- "USGS/3DEP/1m" |>
 gd_properties(a)
 #>                                                                        id
 #> 1 USGS/3DEP/1m/USGS_1M_10_x64y416_CA_UpperSouthAmerican_Eldorado_2019_B19
-#>                  date
-#> 1 2005-12-31 16:00:00
+#>         date
+#> 1 2006-01-01
 
 # resampling images as part of composite; before download
 x <- a |>
@@ -300,6 +299,7 @@ x <- a |>
               crs = "EPSG:5070",
               scale = 1,
               filename = "image.tif",
+              bands = list("elevation"),
               overwrite = TRUE,
               silent = FALSE) |>
   rast()
@@ -309,7 +309,7 @@ plot(terra::terrain(x$elevation))
 plot(project(b, x), add = TRUE)
 ```
 
-<img src="man/figures/README-unnamed-chunk-6-1.jpeg" width="100%" />
+<img src="man/figures/README-lidar-composite-1.jpeg" width="100%" />
 
 ## Example: Landsat-7 cloud/shadow-free composite
 
@@ -347,16 +347,16 @@ x <- 'LANDSAT/LE07/C02/T1_L2' |>
 
 # inspect individual image metadata in the collection
 gd_properties(x)
-#>                                            id                date  fill
-#> 1 LANDSAT/LE07/C02/T1_L2/LE07_043034_20201130 2020-11-29 16:00:00 86.41
-#> 2 LANDSAT/LE07/C02/T1_L2/LE07_043034_20210101 2020-12-31 16:00:00 86.85
-#> 3 LANDSAT/LE07/C02/T1_L2/LE07_043034_20210117 2021-01-16 16:00:00 86.05
-#> 4 LANDSAT/LE07/C02/T1_L2/LE07_043034_20210218 2021-02-17 16:00:00 85.66
-#>   cloudless grmse    saa   sea
-#> 1     99.98  4.92 151.45 25.21
-#> 2     98.89  4.79 148.07 22.47
-#> 3     99.93  5.44 145.16 23.71
-#> 4     99.91  5.73 138.46 30.91
+#>                                            id       date  fill cloudless grmse
+#> 1 LANDSAT/LE07/C02/T1_L2/LE07_043034_20201130 2020-11-30 86.41     99.98  4.92
+#> 2 LANDSAT/LE07/C02/T1_L2/LE07_043034_20210101 2021-01-01 86.85     98.89  4.79
+#> 3 LANDSAT/LE07/C02/T1_L2/LE07_043034_20210117 2021-01-17 86.05     99.93  5.44
+#> 4 LANDSAT/LE07/C02/T1_L2/LE07_043034_20210218 2021-02-18 85.66     99.91  5.73
+#>      saa   sea
+#> 1 151.45 25.21
+#> 2 148.07 22.47
+#> 3 145.16 23.71
+#> 4 138.46 30.91
 
 # download a single image, no compositing
 y <- gd_properties(x)$id[1] |> 
@@ -374,7 +374,7 @@ y <- gd_properties(x)$id[1] |>
 plot(rast(y)[[1:4]])
 ```
 
-<img src="man/figures/README-unnamed-chunk-7-1.jpeg" width="100%" />
+<img src="man/figures/README-landsat7-composite-1.jpeg" width="100%" />
 
 Now we have several images of interest, and also major issues with some
 of the inputs. In this case there were failures of sensors on the
@@ -402,7 +402,7 @@ z <- x |>
 plot(rast(z)[[1:4]])
 ```
 
-<img src="man/figures/README-unnamed-chunk-8-1.jpeg" width="100%" />
+<img src="man/figures/README-landsat7-qmosaic-1.jpeg" width="100%" />
 
 The `"q-mosaic"` method produces a composite (largely) free of artifacts
 in this case; this is because it prioritizes pixels with higher distance

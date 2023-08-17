@@ -5,8 +5,10 @@
 #' @return `gd_enum_names()`: character vector containing names of Enums
 #' @export
 #' @rdname enum
+#' @examplesIf gd_is_initialized()
 #' @examples
 #' \donttest{
+#'  if (gd_is_initialized())
 #'   gd_enum_names()
 #' }
 gd_enum_names <- function() {
@@ -20,6 +22,7 @@ gd_enum_names <- function() {
 #' @examplesIf gd_is_initialized()
 #' @examples
 #' \donttest{
+#'  if (gd_is_initialized())
 #'   gd_enum_elements()
 #' }
 gd_enum_elements <- function(enum = gd_enum_names()) {
@@ -28,7 +31,9 @@ gd_enum_elements <- function(enum = gd_enum_names()) {
     y <- gd$enums[[x]]
     do.call('c', lapply(names(y), function(z) {
       zz <- y[[z]]
-      if ("value" %in% names(zz)) {
+      if (is.character(zz) && length(zz) == 1) {
+        zz
+      } else if ("value" %in% names(zz)) {
         zz$value
       } else
         NULL
@@ -44,6 +49,7 @@ gd_enum_elements <- function(enum = gd_enum_names()) {
 #' @examplesIf gd_is_initialized()
 #' @examples
 #' \donttest{
+#'  if (gd_is_initialized())
 #'   gd_resampling_methods()
 #' }
 gd_resampling_methods <- function() {
@@ -56,6 +62,7 @@ gd_resampling_methods <- function() {
 #' @examplesIf gd_is_initialized()
 #' @examples
 #' \donttest{
+#'  if (gd_is_initialized())
 #'   gd_cloud_mask_methods()
 #' }
 gd_cloud_mask_methods <- function() {
@@ -68,6 +75,7 @@ gd_cloud_mask_methods <- function() {
 #' @examplesIf gd_is_initialized()
 #' @examples
 #' \donttest{
+#'  if (gd_is_initialized())
 #'   gd_composite_methods()
 #' }
 gd_composite_methods <- function() {
@@ -81,6 +89,7 @@ gd_composite_methods <- function() {
 #' @examplesIf gd_is_initialized()
 #' @examples
 #' \donttest{
+#'  if (gd_is_initialized())
 #'   gd_export_types()
 #' }
 gd_export_types <- function() {
@@ -93,6 +102,7 @@ gd_export_types <- function() {
 #' @examplesIf gd_is_initialized()
 #' @examples
 #' \donttest{
+#'  if (gd_is_initialized())
 #'   gd_spectral_distance_metrics()
 #' }
 gd_spectral_distance_metrics <- function() {

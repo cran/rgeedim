@@ -379,20 +379,22 @@ is interchangeably represented as a simple <code>list</code> object in
 are expressed in WGS84 decimal degrees (<code>&quot;OGC:CRS84&quot;</code>). Note
 that longitude, latitude (X, Y) coordinate pair order is implied.</p>
 </div>
-<div id="access-by-id" class="section level2">
-<h2>Access by ID</h2>
+<div id="access-images-by-id" class="section level2">
+<h2>Access Images by ID</h2>
 <p>We can find IDs of assets of interest using the Google Earth Engine
 data catalog: <a href="https://developers.google.com/earth-engine/datasets/catalog" class="uri">https://developers.google.com/earth-engine/datasets/catalog</a></p>
 <p>To obtain an R object reference to the asset we pass the
 <code>&quot;id&quot;</code> to <code>gd_image_from_id()</code>. For example here
 we use <a href="https://developers.google.com/earth-engine/datasets/catalog/CSP_ERGo_1_0_Global_SRTM_topoDiversity">Global
 SRTM Topographic Diversity</a>:</p>
+<div id="download-srtm-topographic-diversity-product" class="section level3">
+<h3>Download SRTM Topographic Diversity product</h3>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">gd_image_from_id</span>(<span class="st">&#39;CSP/ERGo/1_0/Global/SRTM_topoDiversity&#39;</span>)</span></code></pre></div>
 <p><code>gd_image_from_id()</code> will return
 <code>geedim.mask.MaskedImage</code> and
 <code>gd_collection_from_name()</code> will return
 <code>geedim.collection.MaskedCollection</code> objects.</p>
-<p>Now, we pass the image result to <code>gd_download()</code>. We can
+<p>Now we pass the image result to <code>gd_download()</code>. We can
 specify output <code>filename</code> and target area as
 <code>region</code> arguments. See <code>gd_bbox()</code> for examples
 of making a region argument from bounding coordinates or a {terra}
@@ -412,11 +414,182 @@ functions that might read the result.</p>
 GeoTIFF <code>gd_download()</code> result.</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">library</span>(terra)</span>
 <span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>f <span class="ot">&lt;-</span> <span class="fu">rast</span>(img)</span></code></pre></div>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mar=</span><span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>))</span>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>))</span>
 <span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="fu">plot</span>(f[[<span class="dv">1</span>]])</span>
 <span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a></span>
 <span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="co"># inspect object</span></span>
 <span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>f</span></code></pre></div>
+</div>
+<div id="create-a-local-hillshade-from-dem" class="section level3">
+<h3>Create a local Hillshade from DEM</h3>
+<p>This example demonstrates the download of a section of the USGS NED
+seamless 10m grid. This DEM is processed locally with {terra} to
+calculate some terrain derivatives (slope, aspect) and a hillshade.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">library</span>(rgeedim)</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="fu">library</span>(terra)</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="fu">gd_initialize</span>()</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>b <span class="ot">&lt;-</span> <span class="fu">gd_bbox</span>(</span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>  <span class="at">xmin =</span> <span class="sc">-</span><span class="fl">120.296</span>,</span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a>  <span class="at">xmax =</span> <span class="sc">-</span><span class="fl">120.227</span>,</span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>  <span class="at">ymin =</span> <span class="fl">37.9824</span>,</span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>  <span class="at">ymax =</span> <span class="fl">38.0071</span></span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a>)</span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a></span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a><span class="do">## hillshade example</span></span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a><span class="co"># download 10m NED DEM in AEA</span></span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="st">&quot;USGS/NED&quot;</span> <span class="sc">|&gt;</span></span>
+<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a>  <span class="fu">gd_image_from_id</span>() <span class="sc">|&gt;</span></span>
+<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a>  <span class="fu">gd_download</span>(</span>
+<span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a>    <span class="at">region =</span> b,</span>
+<span id="cb9-19"><a href="#cb9-19" tabindex="-1"></a>    <span class="at">scale =</span> <span class="dv">10</span>,</span>
+<span id="cb9-20"><a href="#cb9-20" tabindex="-1"></a>    <span class="at">crs =</span> <span class="st">&quot;EPSG:5070&quot;</span>,</span>
+<span id="cb9-21"><a href="#cb9-21" tabindex="-1"></a>    <span class="at">resampling =</span> <span class="st">&quot;bilinear&quot;</span>,</span>
+<span id="cb9-22"><a href="#cb9-22" tabindex="-1"></a>    <span class="at">filename =</span> <span class="st">&quot;image.tif&quot;</span>,</span>
+<span id="cb9-23"><a href="#cb9-23" tabindex="-1"></a>    <span class="at">bands =</span> <span class="fu">list</span>(<span class="st">&quot;elevation&quot;</span>),</span>
+<span id="cb9-24"><a href="#cb9-24" tabindex="-1"></a>    <span class="at">overwrite =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb9-25"><a href="#cb9-25" tabindex="-1"></a>    <span class="at">silent =</span> <span class="cn">FALSE</span></span>
+<span id="cb9-26"><a href="#cb9-26" tabindex="-1"></a>  )</span>
+<span id="cb9-27"><a href="#cb9-27" tabindex="-1"></a>dem <span class="ot">&lt;-</span> <span class="fu">rast</span>(x)<span class="sc">$</span>elevation</span>
+<span id="cb9-28"><a href="#cb9-28" tabindex="-1"></a></span>
+<span id="cb9-29"><a href="#cb9-29" tabindex="-1"></a><span class="co"># calculate slope, aspect, and hillshade with terra</span></span>
+<span id="cb9-30"><a href="#cb9-30" tabindex="-1"></a>slp <span class="ot">&lt;-</span> <span class="fu">terrain</span>(dem, <span class="st">&quot;slope&quot;</span>, <span class="at">unit =</span> <span class="st">&quot;radians&quot;</span>)</span>
+<span id="cb9-31"><a href="#cb9-31" tabindex="-1"></a>asp <span class="ot">&lt;-</span> <span class="fu">terrain</span>(dem, <span class="st">&quot;aspect&quot;</span>, <span class="at">unit =</span> <span class="st">&quot;radians&quot;</span>)</span>
+<span id="cb9-32"><a href="#cb9-32" tabindex="-1"></a>hsd <span class="ot">&lt;-</span> <span class="fu">shade</span>(slp, asp)</span>
+<span id="cb9-33"><a href="#cb9-33" tabindex="-1"></a></span>
+<span id="cb9-34"><a href="#cb9-34" tabindex="-1"></a><span class="co"># compare elevation v.s. hillshade</span></span>
+<span id="cb9-35"><a href="#cb9-35" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">c</span>(dem, <span class="at">hillshade =</span> hsd))</span></code></pre></div>
+<p>Subsets of the <code>&quot;USGS/NED&quot;</code> image result in multi-band
+GeoTIFF with <code>&quot;elevation&quot;</code> and <code>&quot;FILL_MASK&quot;</code>
+bands. In the contiguous US we know the DEM is continuous so the
+<code>FILL_MASK</code> is not that useful. With geedim &gt;1.7 we
+retrieve only the <code>&quot;elevation&quot;</code> band by specifying argument
+<code>bands = list(&quot;elevation&quot;)</code>. This cuts the raw image size
+that we need to download in half.</p>
+</div>
+</div>
+<div id="working-with-image-collections" class="section level2">
+<h2>Working with Image Collections</h2>
+<p>Many Google Earth Engine assets of interest are “collections.” These
+assets contain data for several bands, dates, processes, resolutions,
+etc. There are standard ways that these collections can be aggregated;
+also, custom processing can be achieved through the Earth Engine API or
+by downloading data to your computer and working offline.</p>
+<p>Filters on date and data quality are possible with
+<code>gd_search()</code>; many processes on collections cannot proceed
+without first “searching” it. We can quickly inspect search results with
+<code>gd_properties()</code></p>
+<p>A key step in many processes involving image collections is the use
+of <code>gd_composite()</code> to re-sample (or otherwise “combine”)
+component images of interest from the collection into a single layer.
+These operations are often performed on the server-side prior to
+download. A composite image can also be made automatically through
+<code>gd_download()</code> (which defaults to
+<code>composite=TRUE</code>). Setting <code>composite=FALSE</code> will
+allow individual images to be downloaded as separate GeoTIFF without
+aggregation to a single layer.</p>
+<div id="composite-lidar-dem" class="section level3">
+<h3>Composite LiDAR DEM</h3>
+<p>This example demonstrates how to access 1-meter LiDAR data from the
+USGS 3D Elevation Program (3DEP). LiDAR data are not available
+everywhere, and are generally available as collections of tiles for
+specific dates. We will use <code>gd_search()</code> to narrow down the
+options.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="co"># search and download composite from USGS 1m lidar data collection</span></span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="fu">library</span>(rgeedim)</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="fu">library</span>(terra)</span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a><span class="fu">gd_initialize</span>()</span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a><span class="co"># wkt-&gt;SpatVector-&gt;GeoJSON</span></span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a>b <span class="ot">&lt;-</span> <span class="st">&#39;POLYGON((-121.355 37.56,-121.355 37.555,</span></span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a><span class="st">          -121.35 37.555,-121.35 37.56,</span></span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a><span class="st">          -121.355 37.56))&#39;</span> <span class="sc">|&gt;</span></span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a>  <span class="fu">vect</span>(<span class="at">crs =</span> <span class="st">&quot;OGC:CRS84&quot;</span>)</span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a></span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a><span class="co"># create a GeoJSON-like list from a SpatVector object</span></span>
+<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a><span class="co"># (most rgeedim functions arguments for spatial inputs do this automatically)</span></span>
+<span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a>r <span class="ot">&lt;-</span> <span class="fu">gd_region</span>(b)</span>
+<span id="cb10-16"><a href="#cb10-16" tabindex="-1"></a></span>
+<span id="cb10-17"><a href="#cb10-17" tabindex="-1"></a><span class="co"># search collection for an area of interest</span></span>
+<span id="cb10-18"><a href="#cb10-18" tabindex="-1"></a>a <span class="ot">&lt;-</span> <span class="st">&quot;USGS/3DEP/1m&quot;</span> <span class="sc">|&gt;</span></span>
+<span id="cb10-19"><a href="#cb10-19" tabindex="-1"></a>  <span class="fu">gd_collection_from_name</span>() <span class="sc">|&gt;</span></span>
+<span id="cb10-20"><a href="#cb10-20" tabindex="-1"></a>  <span class="fu">gd_search</span>(<span class="at">region =</span> r) </span>
+<span id="cb10-21"><a href="#cb10-21" tabindex="-1"></a></span>
+<span id="cb10-22"><a href="#cb10-22" tabindex="-1"></a><span class="co"># inspect individual image metadata in the collection</span></span>
+<span id="cb10-23"><a href="#cb10-23" tabindex="-1"></a><span class="fu">gd_properties</span>(a)</span>
+<span id="cb10-24"><a href="#cb10-24" tabindex="-1"></a></span>
+<span id="cb10-25"><a href="#cb10-25" tabindex="-1"></a><span class="co"># resampling images as part of composite; before download</span></span>
+<span id="cb10-26"><a href="#cb10-26" tabindex="-1"></a>x <span class="ot">&lt;-</span> a <span class="sc">|&gt;</span></span>
+<span id="cb10-27"><a href="#cb10-27" tabindex="-1"></a>  <span class="fu">gd_composite</span>(<span class="at">resampling =</span> <span class="st">&quot;bilinear&quot;</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb10-28"><a href="#cb10-28" tabindex="-1"></a>  <span class="fu">gd_download</span>(<span class="at">region =</span> r,</span>
+<span id="cb10-29"><a href="#cb10-29" tabindex="-1"></a>              <span class="at">crs =</span> <span class="st">&quot;EPSG:5070&quot;</span>,</span>
+<span id="cb10-30"><a href="#cb10-30" tabindex="-1"></a>              <span class="at">scale =</span> <span class="dv">1</span>,</span>
+<span id="cb10-31"><a href="#cb10-31" tabindex="-1"></a>              <span class="at">filename =</span> <span class="st">&quot;image.tif&quot;</span>,</span>
+<span id="cb10-32"><a href="#cb10-32" tabindex="-1"></a>              <span class="at">overwrite =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb10-33"><a href="#cb10-33" tabindex="-1"></a>              <span class="at">silent =</span> <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb10-34"><a href="#cb10-34" tabindex="-1"></a>  <span class="fu">rast</span>()</span>
+<span id="cb10-35"><a href="#cb10-35" tabindex="-1"></a></span>
+<span id="cb10-36"><a href="#cb10-36" tabindex="-1"></a><span class="co"># inspect</span></span>
+<span id="cb10-37"><a href="#cb10-37" tabindex="-1"></a><span class="fu">plot</span>(terra<span class="sc">::</span><span class="fu">terrain</span>(x<span class="sc">$</span>elevation))</span>
+<span id="cb10-38"><a href="#cb10-38" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">project</span>(b, x), <span class="at">add =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<p>The small sample extent covers only one tile, but in larger examples
+LiDAR data sources co-occur or span larger extents with variable
+coverage.</p>
+</div>
+<div id="downloading-individual-images-in-a-collection" class="section level3">
+<h3>Downloading individual images in a collection</h3>
+<p>This example downloads each component image of the DAYMET climate
+collection “daily precipitation” layers into a temporary folder as
+separate GeoTIFFs. These individual images can be further aggregated or
+processed outside of Google Earth Engine.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="co"># search and download individual images from daymet V4</span></span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a><span class="fu">library</span>(rgeedim)</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a><span class="fu">library</span>(terra)</span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a><span class="fu">gd_initialize</span>()</span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a>r <span class="ot">&lt;-</span> <span class="fu">gd_bbox</span>(</span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a>  <span class="at">xmin =</span> <span class="sc">-</span><span class="dv">121</span>,</span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a>  <span class="at">xmax =</span> <span class="sc">-</span><span class="fl">120.5</span>,</span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a>  <span class="at">ymin =</span> <span class="fl">38.5</span>,</span>
+<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a>  <span class="at">ymax =</span> <span class="dv">39</span></span>
+<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a>)</span>
+<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a></span>
+<span id="cb11-14"><a href="#cb11-14" tabindex="-1"></a><span class="co"># search collection for spatial and date range (one week in January 2020)</span></span>
+<span id="cb11-15"><a href="#cb11-15" tabindex="-1"></a><span class="fu">gd_collection_from_name</span>(<span class="st">&#39;NASA/ORNL/DAYMET_V4&#39;</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb11-16"><a href="#cb11-16" tabindex="-1"></a>  <span class="fu">gd_search</span>(<span class="at">region =</span> r,</span>
+<span id="cb11-17"><a href="#cb11-17" tabindex="-1"></a>            <span class="at">start_date =</span> <span class="st">&quot;2020-01-21&quot;</span>,</span>
+<span id="cb11-18"><a href="#cb11-18" tabindex="-1"></a>            <span class="at">end_date =</span> <span class="st">&quot;2020-01-27&quot;</span>) <span class="ot">-&gt;</span> res</span>
+<span id="cb11-19"><a href="#cb11-19" tabindex="-1"></a></span>
+<span id="cb11-20"><a href="#cb11-20" tabindex="-1"></a><span class="co"># get table of IDs and dates</span></span>
+<span id="cb11-21"><a href="#cb11-21" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">gd_properties</span>(res)</span>
+<span id="cb11-22"><a href="#cb11-22" tabindex="-1"></a>td <span class="ot">&lt;-</span> <span class="fu">file.path</span>(<span class="fu">tempdir</span>(), <span class="st">&quot;DAYMET_V4&quot;</span>)</span>
+<span id="cb11-23"><a href="#cb11-23" tabindex="-1"></a></span>
+<span id="cb11-24"><a href="#cb11-24" tabindex="-1"></a><span class="co"># create a new collection using gd_collection_from_list()</span></span>
+<span id="cb11-25"><a href="#cb11-25" tabindex="-1"></a><span class="co"># download each image as separate GeoTIFF (no compositing)</span></span>
+<span id="cb11-26"><a href="#cb11-26" tabindex="-1"></a><span class="co"># Note: `filename` is a directory</span></span>
+<span id="cb11-27"><a href="#cb11-27" tabindex="-1"></a><span class="fu">gd_collection_from_list</span>(p<span class="sc">$</span>id) <span class="sc">|&gt;</span></span>
+<span id="cb11-28"><a href="#cb11-28" tabindex="-1"></a>  <span class="fu">gd_download</span>(</span>
+<span id="cb11-29"><a href="#cb11-29" tabindex="-1"></a>    <span class="at">filename =</span> td,</span>
+<span id="cb11-30"><a href="#cb11-30" tabindex="-1"></a>    <span class="at">composite =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb11-31"><a href="#cb11-31" tabindex="-1"></a>    <span class="at">dtype =</span> <span class="st">&#39;int16&#39;</span>,</span>
+<span id="cb11-32"><a href="#cb11-32" tabindex="-1"></a>    <span class="at">region =</span> r,</span>
+<span id="cb11-33"><a href="#cb11-33" tabindex="-1"></a>    <span class="at">bands =</span> <span class="fu">list</span>(<span class="st">&quot;prcp&quot;</span>),</span>
+<span id="cb11-34"><a href="#cb11-34" tabindex="-1"></a>    <span class="at">crs =</span> <span class="st">&quot;EPSG:5070&quot;</span>,</span>
+<span id="cb11-35"><a href="#cb11-35" tabindex="-1"></a>    <span class="at">scale =</span> <span class="dv">1000</span></span>
+<span id="cb11-36"><a href="#cb11-36" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
+<span id="cb11-37"><a href="#cb11-37" tabindex="-1"></a>  <span class="fu">rast</span>() <span class="ot">-&gt;</span> x2</span>
+<span id="cb11-38"><a href="#cb11-38" tabindex="-1"></a></span>
+<span id="cb11-39"><a href="#cb11-39" tabindex="-1"></a><span class="co"># filter to bands of interest (if neeeded)</span></span>
+<span id="cb11-40"><a href="#cb11-40" tabindex="-1"></a>x2 <span class="ot">&lt;-</span> x2[[<span class="fu">names</span>(x2) <span class="sc">==</span> <span class="st">&quot;prcp&quot;</span>]]</span>
+<span id="cb11-41"><a href="#cb11-41" tabindex="-1"></a></span>
+<span id="cb11-42"><a href="#cb11-42" tabindex="-1"></a><span class="co"># set time for each layer</span></span>
+<span id="cb11-43"><a href="#cb11-43" tabindex="-1"></a><span class="fu">time</span>(x2) <span class="ot">&lt;-</span> p<span class="sc">$</span>date</span>
+<span id="cb11-44"><a href="#cb11-44" tabindex="-1"></a><span class="fu">panel</span>(x2)</span>
+<span id="cb11-45"><a href="#cb11-45" tabindex="-1"></a><span class="fu">title</span>(<span class="at">ylab =</span> <span class="st">&quot;Daily Precipitation (mm)&quot;</span>)</span></code></pre></div>
+</div>
 </div>
 
 
