@@ -1,4 +1,4 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 library(rgeedim)
 knitr::opts_chunk$set(
   eval = FALSE,
@@ -42,7 +42,7 @@ knitr::opts_chunk$set(
 #  # inspect object
 #  f
 
-## ---- dem10-hillshade---------------------------------------------------------
+## ----dem10-hillshade----------------------------------------------------------
 #  library(rgeedim)
 #  library(terra)
 #  
@@ -119,7 +119,7 @@ knitr::opts_chunk$set(
 #  plot(terra::terrain(x$elevation))
 #  plot(project(b, x), add = TRUE)
 
-## ---- daymet-nocomposite------------------------------------------------------
+## ----daymet-nocomposite-------------------------------------------------------
 #  # search and download individual images from daymet V4
 #  library(rgeedim)
 #  library(terra)
@@ -166,7 +166,7 @@ knitr::opts_chunk$set(
 #  panel(x2)
 #  title(ylab = "Daily Precipitation (mm)")
 
-## ---- include=FALSE-----------------------------------------------------------
+## ----include=FALSE------------------------------------------------------------
 #  unlink("image.tif")
 #  unlink(td, recursive = TRUE)
 

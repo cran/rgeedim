@@ -1,3 +1,18 @@
+# rgeedim 0.2.6
+ * `gd_authenticate()`: Updates
+ 
+   - Added `force` and `scopes` arguments from `earthengine()$Authenticate()`. `force` defaults to `TRUE` for consistency with prior behavior, and because users often want to use `gd_authenticate()` to change existing credentials.
+   
+   - Updated documentation for other `auth_mode` e.g. `"colab"`
+   
+ * `gd_initialize()`: Updates
+ 
+   - Added arguments `credentials`, `cloud_api_key`, `url`, `http_transport` and `project`
+   
+   - Deprecated argument `opt_url` (in favor of `url`)
+   
+ * Argument updates compatible with older versions of earthengine-api (< 0.1.382) 
+ 
 # rgeedim 0.2.5
 
  * Update example for `gd_enum_names()`

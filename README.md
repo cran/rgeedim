@@ -80,19 +80,6 @@ This shell command assumes you have a Python 3 executable named (or
 aliased) as `python` on your PATH, or the command is being called from
 within an active Python virtual environment.
 
-#### Using Miniconda
-
-If you do not have a Python environment set up, an option that
-{reticulate} provides is `reticulate::install_miniconda()`. Once you
-install Miniconda, you can install packages into a conda environment
-such as `"r-reticulate"` (default). Customize the `envname` argument to
-create or add to a specific environment.
-
-``` r
-reticulate::install_miniconda()
-reticulate::py_install("geedim")
-```
-
 ### Troubleshooting
 
 If using Python within RStudio, you may need to set your default
@@ -106,7 +93,7 @@ expressed in WGS84 decimal degrees (`"OGC:CRS84"`).
 
 ``` r
 library(rgeedim)
-#> rgeedim v0.2.5 -- using geedim 1.7.2 w/ earthengine-api 0.1.363
+#> rgeedim v0.2.6 -- using geedim 1.7.2 w/ earthengine-api 0.1.384
 ```
 
 If this is your first time using any Google Earth Engine tools,
@@ -175,7 +162,7 @@ where data are available).
 
 ``` r
 library(terra)
-#> terra 1.7.39
+#> terra 1.7.65
 
 f <- rast(res)
 f
