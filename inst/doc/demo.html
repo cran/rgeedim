@@ -357,11 +357,17 @@ the <code>gcloud</code> CLI tools. However, the other options are better
 for non-interactive use.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">gd_authenticate</span>(<span class="at">auth_mode =</span> <span class="st">&quot;notebook&quot;</span>)</span></code></pre></div>
 <p>You only need to authenticate periodically, depending on the method
-you used. But in each session we need to call
-<code>gd_initialize()</code>. This is a wrapper function around
-<code>geedim.Initialize()</code> that must be run before using the
-Python Google Earth Engine API.</p>
+you used.</p>
+<p>In each session we need to call <code>gd_initialize()</code>. This is
+a wrapper function around <code>geedim.Initialize()</code> that must be
+run before using the Python Google Earth Engine API.</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">gd_initialize</span>()</span></code></pre></div>
+<p>Note that with <code>auth_mode=&quot;gcloud&quot;</code> you need to specify
+the project via <code>project=</code> argument, in your default
+configuration file or via system environment variable
+<code>GOOGLE_CLOUD_QUOTA_PROJECT</code>. The authorization tokens
+generated for <code>auth_mode=&quot;notebook&quot;</code> are always associated
+with a specific project.</p>
 <p>Perhaps the <em>simplest</em> way to specify the target extent is
 using the xmin/xmax/ymin/ymax arguments to <code>gd_bbox()</code>. This
 function returns a Python object equivalent to <em>GeoJSON</em>, which

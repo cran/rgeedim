@@ -15,7 +15,6 @@
 #' @return Invisible path to downloaded image, or `try-error` on error
 #' @export
 #' @examplesIf gd_is_initialized()
-#' @examples
 #' \donttest{
 #'  r <- gd_bbox(
 #'    xmin = -121,
@@ -148,7 +147,7 @@ gd_download <- function(x,
       }
       fp <- sprintf(file.path(dest, paste0(basename(y), "_%sm.tif")),
                     ifelse(scale < 1000, scale, paste0(scale / 1000, "k")))
-      if (!file.exists(fp)) {
+      if (overwrite || !file.exists(fp)) {
         y <- gd_download(img, fp, region = region, scale = scale, silent = silent, overwrite = overwrite, ...)
       }
       # update names; TODO get this fixed in geedim
